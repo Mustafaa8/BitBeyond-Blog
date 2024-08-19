@@ -6,8 +6,10 @@ const path = require('path')
 const logger = require('morgan')
 const expresslayout = require('express-ejs-layouts')
 const router = require('./routes/main')
-
-
+const dbConnection = require('./config/db')
+const { default: mongoose } = require('mongoose')
+// server Connection
+dbConnection()
 // Logging 
 app.use(logger('dev'))
 // static folder
@@ -27,7 +29,6 @@ app.use((err,req,res,next)=>{
     console.error(err)
     res.status(500).send("500 Somthing is Broken ")
 })
-
 app.listen(port,()=>{
     console.log(`Server is working on http://localhost:${port}`)
 })
