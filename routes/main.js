@@ -34,6 +34,27 @@ router.get('/post/:id',async(req,res)=>{
     }
     res.render('post',{article,locals})
 })
+
+router.post('/search',async(req,res)=>{
+    try{
+        let searchTerm  = req.body.searchTerm;
+        console.log(searchTerm)
+        const searchClear = searchTerm.replace(/[^a-zA-Z0-9]/g,"")
+        const data = await post.find({
+            $or:[
+                {title:{$regex: new RegExp(searchClear,'i')}},
+                {body:{$regex: new RegExp(searchClear,'i')}}
+            ]
+        })
+        const locals = {
+            title:"Search Result",
+        }
+        res.render('search',{locals,data})
+} catch(err){
+    console.error(err)
+}
+})
+
 router.get('/about',(req,res)=>{
     res.render('about',{title:"About us"})
 })
