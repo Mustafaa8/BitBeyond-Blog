@@ -10,7 +10,6 @@ const cookieParser = require('cookie-parser');
 const mongoStore = require('connect-mongo')
 const router = require('./routes/main')
 const adminRouter = require('./routes/admin')
-const {isActiveRoute} = require('./helper/routeHelper')
 const dbConnection = require('./config/db')
 const { default: mongoose } = require('mongoose')
 const session = require('express-session') // to create a session for the user 
@@ -45,7 +44,6 @@ app.set('views',path.join(__dirname,'views'))
 app.use('/',router)
 app.use('/',adminRouter)
 
-app.locals.isActiveRoute = isActiveRoute;
 
 app.use((req,res)=>{
     res.status(404).send("404 Not Found")

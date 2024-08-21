@@ -25,11 +25,8 @@ const authMiddleware = (req,res,next)=>{
 
 // admin - login GET
 adminRouter.get('/admin',async (req,res)=>{
-    if(req.cookies.token){
-        return res.redirect(301,'/dashboard')
-    }
     const locals = {
-        title:"Admin",
+        title:"Admin"
     }
     try {
         res.render('admin/index',{locals,layout:adminLayout})
