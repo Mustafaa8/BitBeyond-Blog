@@ -5,10 +5,12 @@ const app = express()
 const path = require('path')
 const logger = require('morgan')
 const expresslayout = require('express-ejs-layouts')
+const methodOverride = require('method-override')
 const cookieParser = require('cookie-parser');
 const mongoStore = require('connect-mongo')
 const router = require('./routes/main')
 const adminRouter = require('./routes/admin')
+const {isActiveRoute} = require('./helper/routeHelper')
 const dbConnection = require('./config/db')
 const { default: mongoose } = require('mongoose')
 const session = require('express-session') // to create a session for the user 
@@ -24,6 +26,7 @@ app.use(express.static(path.join(__dirname + '/public')))
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use(cookieParser());
+app.use(methodOverride('_method'))
 app.use(session({
     secret: 'keyboard cat',
     resave:false,
@@ -41,6 +44,8 @@ app.set('views',path.join(__dirname,'views'))
 // Routing
 app.use('/',router)
 app.use('/',adminRouter)
+
+app.locals.isActiveRoute = isActiveRoute;
 
 app.use((req,res)=>{
     res.status(404).send("404 Not Found")

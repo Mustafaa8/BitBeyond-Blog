@@ -1,12 +1,13 @@
 const express = require('express')
-const user = require('../models/users')
+const User = require('../models/users')
+const Post = require('../models/post')
 const bcrypt = require('bcrypt')
 const adminRouter = express.Router()
 const adminLayout = '../views/layout/admin'
 const jwt = require('jsonwebtoken')
 const jwtSecert = process.env.JWT_SECRET
 
-// Check Login 
+// Check Login Authentication
 const authMiddleware = (req,res,next)=>{
     const token = req.cookies.token;
     if (!token){
@@ -14,7 +15,6 @@ const authMiddleware = (req,res,next)=>{
     }
     try {
         const decoded = jwt.verify(token,jwtSecert);
-        console.log(decoded)
         req.userId = decoded.userId
         next()
     } catch(err){
@@ -25,6 +25,9 @@ const authMiddleware = (req,res,next)=>{
 
 // admin - login GET
 adminRouter.get('/admin',async (req,res)=>{
+    if(req.cookies.token){
+        return res.redirect(301,'/dashboard')
+    }
     const locals = {
         title:"Admin",
     }
@@ -35,10 +38,11 @@ adminRouter.get('/admin',async (req,res)=>{
     }
 })
 
+// Checking for the user to login
 adminRouter.post('/admin',async(req,res)=>{
     try{
         const {username,password} = req.body
-        const FooundUser = await user.findOne({username:username})
+        const FooundUser = await User.findOne({username:username})
         if(!FooundUser){
             return res.status(401).json({message:"Invalid Credintials"})
         }
@@ -53,12 +57,13 @@ adminRouter.post('/admin',async(req,res)=>{
         console.error(err)
     }
 })
+// registering to the website
 adminRouter.post('/register',async (req,res,next)=>{
     try{
         const {username , password} = req.body;
         const hashedPassword = await bcrypt.hash(password,10)
         try{
-            const newUser = user.create({username:username,password:hashedPassword});
+            const newUser = User.create({username:username,password:hashedPassword});
             res.status(201).json({message:'user created'},newUser)
         } catch(err) {
             if (err.code === 11000){
@@ -75,13 +80,73 @@ adminRouter.post('/register',async (req,res,next)=>{
 adminRouter.get('/dashboard',authMiddleware,async (req,res)=>{
     const locals = {
         title:"Dashboard",
+        description:"Simple Blog Created using NodeJS and MongoDB"
     }
     try {
-        res.render('admin/dashboard',{locals,layout:adminLayout})
+        const data = await Post.find()
+        res.render('admin/dashboard',{locals,data,layout:adminLayout})
     } catch(err){
         console.error(err)
     }
 })
-
+// adding new posts route
+adminRouter.get('/add-post',authMiddleware,(req,res)=>{
+    try{
+    const locals = {
+        title:"Adding New Post",
+        description:"Simple Blog Created using NodeJS and MongoDB"
+    }
+    res.render('admin/adding',{locals,layout:adminLayout})
+} catch(err){
+    next()
+}
+})
+// POST - Adding new posts to the Database
+adminRouter.post('/add-post',authMiddleware,async (req,res)=>{
+    try{
+        const {title,body} = req.body
+        const post = await Post.create({title:title,body:body})
+        res.redirect(301,'/dashboard')
+    } catch(err){
+        next()
+    }
+})
+// Get editing post page
+adminRouter.get('/edit-post/:id',authMiddleware,async(req,res)=>{
+    try{
+        const locals = {
+            title:"Editing Post",
+            description:"Simple Blog Created using NodeJS and MongoDB"
+        }
+        const post = await Post.findById(req.params.id)
+        if(!post){
+            return res.status(400).json({'Message':'No post with this id'})
+        }
+        res.render('admin/editing',{locals,post,layout:adminLayout})
+    } catch(err){
+        next()
+    }
+})
+adminRouter.put('/edit-post/:id',authMiddleware,async (req,res)=>{
+    try{
+        await Post.findByIdAndUpdate(req.params.id,{title:req.body.title,body:req.body.body,updatedAt:Date.now()})
+        res.redirect(301,`/edit-post/${req.params.id}`)
+    } catch(err){
+        next()
+    }
+})
+// Delete - Posts
+adminRouter.delete('/delete-post/:id',authMiddleware,async (req,res)=>{
+    try{
+        await Post.findByIdAndDelete(req.params.id)
+        res.redirect(301,`/dashboard`)
+    } catch(err){
+        next()
+    }
+})
+// logut
+adminRouter.get('/logout',(req,res)=>{
+    res.clearCookie('token').redirect(301,'/')
+}) 
 
 module.exports = adminRouter;
