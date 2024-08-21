@@ -8,13 +8,12 @@ Here's a README file template for the **BitBeyond-Blog** project:
 
 ## Table of Contents
 
-- [Images] 
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Technologies](#technologies)
 
-## Images
+### Some Images
 
 ![BlogMain](https://github.com/user-attachments/assets/0198ece1-c407-4809-920e-37ddc7a4d2d4)
 ![blogsignin](https://github.com/user-attachments/assets/43ece9c6-be7f-4f5e-8ecf-3fe8eb202278)
