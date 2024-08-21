@@ -25,11 +25,12 @@ const authMiddleware = (req,res,next)=>{
 
 // admin - login GET
 adminRouter.get('/admin',async (req,res)=>{
-    const locals = {
-        title:"Admin"
-    }
     try {
+        const locals={
+            title:"Admin Panel"
+        }
         res.render('admin/index',{locals,layout:adminLayout})
+        //res.json({'message':'you are in the right place'})
     } catch(err){
         console.error(err)
     }
@@ -143,7 +144,8 @@ adminRouter.delete('/delete-post/:id',authMiddleware,async (req,res)=>{
 })
 // logut
 adminRouter.get('/logout',(req,res)=>{
-    res.clearCookie('token').redirect(301,'/')
+    res.clearCookie('token')
+    res.redirect(301,'/')
 }) 
 
 module.exports = adminRouter;
